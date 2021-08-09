@@ -20,13 +20,13 @@
 --;
 
 
-ALTER TABLE `cloud`.`service_offering` ADD COLUMN `uuid` varchar(40) UNIQUE;
-ALTER TABLE `cloud`.`service_offering` ADD COLUMN `name` varchar(255);
-ALTER TABLE `cloud`.`service_offering` ADD COLUMN `display_text` varchar(4096);
-ALTER TABLE `cloud`.`service_offering` ADD COLUMN `unique_name` varchar(32) COMMENT 'unique name for system offerings';
+ALTER TABLE `cloud`.`service_offering` ADD COLUMN `uuid` varchar(40) UNIQUE DEFAULT NULL;
+ALTER TABLE `cloud`.`service_offering` ADD COLUMN `name` varchar(255) NOT NULL;
+ALTER TABLE `cloud`.`service_offering` ADD COLUMN `display_text` varchar(4096) DEFAULT NULL ;
+ALTER TABLE `cloud`.`service_offering` ADD COLUMN `unique_name` varchar(32) DEFAULT NULL COMMENT 'unique name for system offerings';
 ALTER TABLE `cloud`.`service_offering` ADD COLUMN `customized` tinyint(1) unsigned NOT NULL DEFAULT 0  COMMENT '0 implies not customized by default';
-ALTER TABLE `cloud`.`service_offering` ADD COLUMN `created` datetime COMMENT 'date when service offering was created';
-ALTER TABLE `cloud`.`service_offering` ADD COLUMN `removed` datetime COMMENT 'date when service offering was removed';
+ALTER TABLE `cloud`.`service_offering` ADD COLUMN `created` datetime DEFAULT NULL COMMENT 'date when service offering was created';
+ALTER TABLE `cloud`.`service_offering` ADD COLUMN `removed` datetime DEFAULT NULL COMMENT 'date when service offering was removed';
 ALTER TABLE `cloud`.`service_offering` ADD COLUMN `state` CHAR(40) NOT NULL DEFAULT 'Active' COMMENT 'state of service offering either Active or Inactive';
 ALTER TABLE `cloud`.`service_offering` ADD COLUMN `disk_offering_id` bigint unsigned;
 ALTER TABLE `cloud`.`service_offering` ADD COLUMN `system_use` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'is this offering for system used only';
@@ -40,6 +40,7 @@ ALTER TABLE `cloud`.`disk_offering` DROP COLUMN `type`;
 ALTER TABLE `cloud`.`vm_instance` DROP COLUMN `disk_offering_id`;
 
 UPDATE `cloud`.`service_offering` so, `cloud`.`disk_offering` do SET so.`name` = do.`name`, so.`display_text` = do.`display_text` WHERE so.`id` = do.`id`;
+UPDATE `cloud`.`disk_offering` SET `disk_size_strictness` = 1 WHERE `compute_only` = 1 AND `disk_size` != 0;
 
 DROP VIEW IF EXISTS `cloud`.`disk_offering_view`;
 CREATE VIEW `cloud`.`disk_offering_view` AS
