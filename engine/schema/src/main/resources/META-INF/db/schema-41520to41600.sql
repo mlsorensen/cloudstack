@@ -72,7 +72,6 @@ CREATE VIEW `cloud`.`disk_offering_view` AS
         `disk_offering`.`customized_iops` AS `customized_iops`,
         `disk_offering`.`removed` AS `removed`,
         `disk_offering`.`use_local_storage` AS `use_local_storage`,
-        `disk_offering`.`system_use` AS `system_use`,
         `disk_offering`.`hv_ss_reserve` AS `hv_ss_reserve`,
         `disk_offering`.`bytes_read_rate` AS `bytes_read_rate`,
         `disk_offering`.`bytes_read_rate_max` AS `bytes_read_rate_max`,
