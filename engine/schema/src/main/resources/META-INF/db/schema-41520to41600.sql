@@ -35,12 +35,25 @@ ALTER TABLE `cloud`.`service_offering` ADD COLUMN `disk_offering_strictness` tin
 
 ALTER TABLE `cloud`.`disk_offering` ADD COLUMN `disk_size_strictness` tinyint(1) unsigned NOT NULL DEFAULT 0  COMMENT 'To allow or disallow the resize operation on the disks created from this offering';
 ALTER TABLE `cloud`.`disk_offering` ADD COLUMN `compute_only` tinyint(1) unsigned NOT NULL DEFAULT 0  COMMENT 'when set to 1, disk offering has one to one binding with service offering';
-ALTER TABLE `cloud`.`disk_offering` DROP COLUMN `type`;
 
 ALTER TABLE `cloud`.`vm_instance` DROP COLUMN `disk_offering_id`;
 
-UPDATE `cloud`.`service_offering` so, `cloud`.`disk_offering` do SET so.`name` = do.`name`, so.`display_text` = do.`display_text` WHERE so.`id` = do.`id`;
+UPDATE `cloud`.`service_offering` so, `cloud`.`disk_offering` do SET    so.`uuid` = do.`uuid`,
+                                                                        so.`name` = do.`name`,
+                                                                        so.`display_text` = do.`display_text`,
+                                                                        so.`unique_name` = do.`unique_name`,
+                                                                        so.`customized` = do.`customized`,
+                                                                        so.`created` = do.`created`,
+                                                                        so.`removed` = do.`removed`,
+                                                                        so.`state` = do.`state`,
+                                                                        so.`disk_offering_id` = do.`id`,
+                                                                        so.`system_use` = do.`system_use` WHERE so.`id` = do.`id`;
+
+UPDATE `cloud`.`disk_offering` SET `compute_only` = 1 where `type` = 'Service';
 UPDATE `cloud`.`disk_offering` SET `disk_size_strictness` = 1 WHERE `compute_only` = 1 AND `disk_size` != 0;
+
+ALTER TABLE `cloud`.`disk_offering` DROP COLUMN `type`;
+ALTER TABLE `cloud`.`disk_offering` DROP COLUMN `system_use`;
 
 DROP VIEW IF EXISTS `cloud`.`disk_offering_view`;
 CREATE VIEW `cloud`.`disk_offering_view` AS
