@@ -129,6 +129,7 @@ import org.apache.cloudstack.storage.datastore.db.StoragePoolDetailVO;
 import org.apache.cloudstack.storage.datastore.db.StoragePoolDetailsDao;
 import org.apache.cloudstack.storage.datastore.db.StoragePoolVO;
 import org.apache.cloudstack.storage.datastore.db.TemplateDataStoreDao;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -2880,6 +2881,7 @@ public class QueryManagerImpl extends MutualExclusiveIdsManagerBase implements Q
         Boolean isRecursive = cmd.isRecursive();
         Long zoneId = cmd.getZoneId();
         Long volumeId = cmd.getVolumeId();
+        Long storagePoolId = cmd.getStoragePoolId();
         // Keeping this logic consistent with domain specific zones
         // if a domainId is provided, we just return the disk offering
         // associated with this domain
@@ -2908,6 +2910,10 @@ public class QueryManagerImpl extends MutualExclusiveIdsManagerBase implements Q
                 sc.addAnd("systemUse", SearchCriteria.Op.EQ, false); // non-root users should not see system offering at all
             }
 
+        }
+
+        if (volumeId != null && storagePoolId != null) {
+            throw new InvalidParameterValueException("Both volume ID and storage pool ID are not allowed at the same time");
         }
 
         if (keyword != null) {
@@ -2975,19 +2981,24 @@ public class QueryManagerImpl extends MutualExclusiveIdsManagerBase implements Q
         }
 
         Pair<List<DiskOfferingJoinVO>, Integer> result = _diskOfferingJoinDao.searchAndCount(sc, searchFilter);
-        if (volumeId != null && CollectionUtils.isNotEmpty(result.first())) {
-            Volume volume = volumeDao.findById(volumeId);
-            currentDiskOffering = _diskOfferingDao.findByIdIncludingRemoved(volume.getDiskOfferingId());
-            String[] currentTagsArray = currentDiskOffering.getTagsArray();
-            if (currentTagsArray.length != 0 && VolumeApiServiceImpl.StoragePoolTagsDiskOfferingStrictness.valueIn(zoneId)) {
-                ListIterator<DiskOfferingJoinVO> iteratorForTagsChecking = result.first().listIterator();
-                while (iteratorForTagsChecking.hasNext()) {
-                    DiskOfferingJoinVO offering = iteratorForTagsChecking.next();
-                    String offeringTags = offering.getTags();
-                    String[] offeringTagsArray = (offeringTags == null || offeringTags.isEmpty()) ? new String[0] : offeringTags.split(",");
-                    if (!CollectionUtils.isSubCollection(Arrays.asList(currentTagsArray), Arrays.asList(offeringTagsArray))) {
-                        iteratorForTagsChecking.remove();
-                    }
+        String[] requiredTagsArray = new String[0];
+        if (CollectionUtils.isNotEmpty(result.first()) && VolumeApiServiceImpl.StoragePoolTagsDiskOfferingStrictness.valueIn(zoneId)) {
+            if (volumeId != null) {
+                Volume volume = volumeDao.findById(volumeId);
+                currentDiskOffering = _diskOfferingDao.findByIdIncludingRemoved(volume.getDiskOfferingId());
+                requiredTagsArray = currentDiskOffering.getTagsArray();
+            } else if (storagePoolId != null) {
+                requiredTagsArray = _storageTagDao.getStoragePoolTags(storagePoolId).toArray(new String[0]);
+            }
+        }
+        if (requiredTagsArray.length != 0) {
+            ListIterator<DiskOfferingJoinVO> iteratorForTagsChecking = result.first().listIterator();
+            while (iteratorForTagsChecking.hasNext()) {
+                DiskOfferingJoinVO offering = iteratorForTagsChecking.next();
+                String offeringTags = offering.getTags();
+                String[] offeringTagsArray = (offeringTags == null || offeringTags.isEmpty()) ? new String[0] : offeringTags.split(",");
+                if (!CollectionUtils.isSubCollection(Arrays.asList(requiredTagsArray), Arrays.asList(offeringTagsArray))) {
+                    iteratorForTagsChecking.remove();
                 }
             }
         }
