@@ -2333,7 +2333,7 @@ public class StorageManagerImpl extends ManagerBase implements StorageManager, C
 
     @Override
     public boolean storagePoolHasEnoughSpace(List<Pair<Volume, DiskProfile>> volumeDiskProfilesList, StoragePool pool, Long clusterId) {
-        if (volumeDiskProfilesList == null || volumeDiskProfilesList.isEmpty()) {
+        if (CollectionUtils.isEmpty(volumeDiskProfilesList)) {
             return false;
         }
 

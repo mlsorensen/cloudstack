@@ -3335,6 +3335,7 @@ public class ManagementServerImpl extends ManagerBase implements ManagementServe
         cmdList.add(UploadVolumeCmd.class);
         cmdList.add(DestroyVolumeCmd.class);
         cmdList.add(RecoverVolumeCmd.class);
+        cmdList.add(ChangeOfferingForVolumeCmd.class);
         cmdList.add(CreateStaticRouteCmd.class);
         cmdList.add(CreateVPCCmd.class);
         cmdList.add(DeleteStaticRouteCmd.class);
@@ -3522,7 +3523,6 @@ public class ManagementServerImpl extends ManagerBase implements ManagementServe
         cmdList.add(IssueOutOfBandManagementPowerActionCmd.class);
         cmdList.add(ChangeOutOfBandManagementPasswordCmd.class);
         cmdList.add(GetUserKeysCmd.class);
-        cmdList.add(ChangeOfferingForVolumeCmd.class);
         return cmdList;
     }
 
