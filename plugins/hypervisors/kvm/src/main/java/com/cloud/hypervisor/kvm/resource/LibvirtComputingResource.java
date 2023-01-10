@@ -198,6 +198,7 @@ import com.cloud.vm.VirtualMachine;
 import com.cloud.vm.VirtualMachine.PowerState;
 import com.cloud.vm.VmDetailConstants;
 
+import static com.cloud.host.Host.HOST_UEFI_ENABLE;
 import static com.cloud.host.Host.HOST_VOLUME_ENCRYPTION;
 
 /**
@@ -3406,6 +3407,10 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
 
         if (cmd.getHostDetails().containsKey("Host.OS")) {
             _hostDistro = cmd.getHostDetails().get("Host.OS");
+        }
+
+        if (isUefiPropertieNotNull(GuestDef.GUEST_NVRAM_PATH)) {
+            cmd.getHostDetails().put(HOST_UEFI_ENABLE, String.valueOf(true));
         }
 
         List<StartupCommand> startupCommands = new ArrayList<>();
